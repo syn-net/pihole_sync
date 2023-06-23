@@ -103,7 +103,15 @@ adjust_config() {
   NOM_FIX_CONFIG="$1"
   if [ "$NOM_FIX_CONFIG" = "true" ] || [ "$NOM_FIX_CONFIG" = "1" ]; then
     #echo "addn-hosts=/etc/pihole/hosts\n" >> /etc/dnsmasq.d/01-pihole.conf
-    sed -i 's/^rev-server=/#&/' /etc/dnsmasq.d/01-pihole.conf
+
+    if [ ! $(grep -e "#rev-server" /etc/dnsmasq.d/01-pihole.conf) ]; then
+      sed -i 's/^rev-server=/#&/' /etc/dnsmasq.d/01-pihole.conf
+    fi
+
+    if [ ! $(grep -e "#log-queries" /etc/dnsmasq.d/01-pihole.conf) ]; then
+      sed -i 's/^log-queries/#&/' /etc/dnsmasq.d/01-pihole.conf
+    fi
+
     if [ ! $(grep -i -e "interface=br-lan" /etc/dnsmasq.d/01-pihole.conf) ]; then
       echo "interface=br-lan" >> /etc/dnsmasq.d/01-pihole.conf
     fi
@@ -117,6 +125,10 @@ adjust_config() {
 
 # Final function call; wrap things up before this is called!
 on_finish() {
+  if [[ -n "$NOM_DEBUG" ]]; then
+    echo "$(date -R)"
+  fi
+
   /etc/init.d/pihole reload
 }
 
