@@ -27,7 +27,7 @@ cp -av etc/init.d/pihole /etc/init.d/pihole
 # have with other services -- so you must start the daemon manually upon boot
 cat etc/rc.local >> /etc/rc.local
 # Sync every five minutes is the default
-cp -av cron/crontab /var/spool/cron/crontabs/root
+cp -av etc/crontabs/root /etc/crontabs/root
 /etc/init.d/cron enable
 /etc/init.d/cron start
 ```
