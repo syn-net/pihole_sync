@@ -100,12 +100,12 @@ sync() {
 # ...where boolean is an optional parameter whose non-nil value will abort performing
 # any adjustments, giving one the raw configuration as was seen on the source.
 adjust_config() {
-  NOM_SYNC_RAW="$1"
+  NOM_FIX_CONFIG="$1"
   if [ "$NOM_FIX_CONFIG" = "true" ] || [ "$NOM_FIX_CONFIG" = "1" ]; then
+    #echo "addn-hosts=/etc/pihole/hosts\n" >> /etc/dnsmasq.d/01-pihole.conf
+    sed -i 's/^rev-server=/#&/' /etc/dnsmasq.d/01-pihole.conf
     if [ ! $(grep -i -e "interface=br-lan" /etc/dnsmasq.d/01-pihole.conf) ]; then
       echo "interface=br-lan" >> /etc/dnsmasq.d/01-pihole.conf
-      sed -i 's/^rev-server=/#&/' /etc/dnsmasq.d/01-pihole.conf
-      #echo "addn-hosts=/etc/pihole/hosts\n" >> /etc/dnsmasq.d/01-pihole.conf
     fi
   else
     if [ -n "$NOM_DEBUG" ]; then
