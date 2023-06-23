@@ -1,0 +1,5 @@
+/root/bin/pihole_sync.sh
+/etc/init.d/pihole
+/etc/dnsmasq.d
+/etc/pihole
+/var/log/pihole

@@ -1,0 +1,105 @@
+#!/usr/bin/env ash
+#
+# /etc/init.d/pihole:jeff
+#
+
+function usage_info() {
+  SCR_NAME=$(basename)
+  echo "Syntax: /etc/init.d/${SCR_NAME} [command]"
+  echo
+  echo -e "Available commands:"
+  echo -e "\tstart\t\tStart the service"
+  echo -e "\tstop\t\tStop the service"
+  echo -e "\trestart\t\tRestart the service"
+  echo -e "\treload\t\tReload configuration files (or restart if service does not implement reload)"
+  echo -e "\tenable\t\tEnable service autostart"
+  echo -e "\tdisable\t\tDisable service autostart"
+  echo -e "\tenabled\t\tCheck if service is started on boot"
+  echo -e "\trunning\t\tCheck if service is running"
+  echo -e "\tstatus\t\tService status"
+  echo -e "\ttrace\t\tStart with syscall trace"
+  echo -e "\tinfo\t\tDump procd service info"
+}
+
+function service_status() {
+  DNSMASQ_PID=$(pgrep dnsmasq)
+  if [[ "$DNSMASQ_PID" != "" ]]; then
+    echo "running"
+  else
+    echo "stopped"
+  fi
+}
+
+function service_running() {
+  DNSMASQ_PID=$(pgrep dnsmasq)
+  if [[ "$DNSMASQ_PID" != "" ]]; then
+    echo "running"
+  fi
+}
+
+# reload configuration of dnsmasq daemon
+function service_reload() {
+  echo "Reloading configuration for dnsmasq..."
+  DNSMASQ_PID=$(pgrep dnsmasq)
+  if [[ "$DNSMASQ_PID" != "" ]]; then
+    kill -s HUP "$DNSMASQ_PID"
+  fi
+}
+
+function _setup() {
+  [[ -n "$NOM_DEBUG" ]] && echo "Creating log file..."
+  mkdir -p /var/log/pihole || exit 255
+  touch /var/log/pihole/pihole.log || exit 255
+}
+
+function service_stop() {
+  echo "Stopping dnsmasq..."
+  DNSMASQ_PID=$(pgrep dnsmasq)
+  if [[ "$DNSMASQ_PID" != "" ]]; then
+    kill -s 15 "$DNSMASQ_PID"
+  fi
+}
+
+function service_restart() {
+  echo "Restarting dnsmasq..." 
+  service_stop
+  service_start
+}
+
+function service_start() {
+  echo "Starting dnsmasq..."
+  _setup
+    
+  dnsmasq --pid-file=/var/run/pihole.pid --conf-file=/etc/pihole/dnsmasq.conf 2>&1
+}
+
+COMMAND=$1
+
+if [[ -z "$COMMAND" ]]; then
+  usage_info
+  exit 1
+fi
+
+case "$COMMAND" in
+  start)
+    service_start
+  ;;
+  reload)
+    service_reload
+  ;;
+  res*|restart*)
+    service_restart
+  ;;
+  stop)
+    service_stop
+  ;;
+  running)
+    service_running
+  ;;
+  status)
+    service_status
+  ;;
+esac
+
+exit 0
+

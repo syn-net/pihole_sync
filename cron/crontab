@@ -1,0 +1,11 @@
+# 1. https://openwrt.org/docs/guide-user/base-system/cron
+# 2. https://crontab.guru
+
+SHELL=/bin/ash
+MAILFROM=root
+MAILTO=i8degrees@gmail.com
+CRON_TZ=America/Chicago
+
+# Sync every 5 minutes
+5/60 * * * * /root/bin/pihole_sync.sh admin@ns1.lan >> /var/log/pihole_sync.log 2>&1
+
