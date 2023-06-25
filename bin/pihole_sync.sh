@@ -30,14 +30,14 @@ check_app_path() {
 # check_ip4_host(addr)
 # ...where addr is an IPv4 address or a hostname that is
 # resolvable by DNS.
-check_ip4_host() {
-  ADDR="$1"
-  if [ ! $("$PING_BIN" -4 -w5 "$ADDR") ]; then
-    echo "CRITICAL: Could not reach the host at ${ADDR}."
-    echo
-    exit 254
-  fi
-}
+#check_ip4_host() {
+  #ADDR="$1"
+  #if [ ! $("$PING_BIN" -4 -w5 "$ADDR") ]; then
+    #echo "CRITICAL: Could not reach the host at ${ADDR}."
+    #echo
+    #exit 254
+  #fi
+#}
 
 # Perform allocation duties of target directory paths and
 # logging files.
@@ -47,14 +47,19 @@ setup() {
   mkdir -p "/var/log/pihole"
   touch "/var/log/pihole/pihole.log"
   touch "/etc/pihole/dnsmasq.conf"
-  
-  # IMPORTANT(jeff): This matches /etc/dnsmasq.conf on the virtual Pihole box that 
+
+  # IMPORTANT(jeff): This matches /etc/dnsmasq.conf on the virtual Pihole box that
   # we do not have SSH access to, less and except the username swap from pihole
   # to dnsmasq.
+  # shellcheck disable=SC3036
+  # shellcheck disable=SC2046
+  # shellcheck disable=SC2143
   if [ ! $(grep -i -e "conf-dir=/etc/dnsmasq.d" /etc/pihole/dnsmasq.conf) ]; then
     echo -e "conf-dir=/etc/dnsmasq.d" >> "/etc/pihole/dnsmasq.conf"
   fi
-
+  # shellcheck disable=SC3036
+  # shellcheck disable=SC2046
+  # shellcheck disable=SC2143
   if [ ! $(grep -i -e "user=dnsmasq" /etc/pihole/dnsmasq.conf) ]; then
     echo -e "user=dnsmasq\n" >> "/etc/pihole/dnsmasq.conf"
   fi
@@ -73,7 +78,7 @@ sync() {
   SOURCE_DNSMASQ_PATH="/mnt/npool0/software/Applications/pihole-1/mounts/dnsmasq"
   TARGET_CONFIG_PATH="/etc/pihole"
   TARGET_DNSMASQ_PATH="/etc/dnsmasq.d"
-  
+
   if [ -z "${SOURCE}" ]; then
     echo "CRITICAL: Missing function parameter in sync function -- ssh source host."
     echo
@@ -104,16 +109,47 @@ adjust_config() {
   if [ "$NOM_FIX_CONFIG" = "true" ] || [ "$NOM_FIX_CONFIG" = "1" ]; then
     #echo "addn-hosts=/etc/pihole/hosts\n" >> /etc/dnsmasq.d/01-pihole.conf
 
+    # ...reductions first...
+
+    # NOTE(jeff): Our variant of dnsmasq does not seem to
+    # understand the syntax Pihole employs.
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2143
     if [ ! $(grep -e "#rev-server" /etc/dnsmasq.d/01-pihole.conf) ]; then
       sed -i 's/^rev-server=/#&/' /etc/dnsmasq.d/01-pihole.conf
     fi
 
+    # IMPORTANT(jeff): Disabling DNS query logging is done
+    # to prevent filling up the disk on this box -- we have
+    # no logrotate or such!
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2143
     if [ ! $(grep -e "#log-queries" /etc/dnsmasq.d/01-pihole.conf) ]; then
       sed -i 's/^log-queries/#&/' /etc/dnsmasq.d/01-pihole.conf
     fi
 
+    # NOTE(jeff): This is entirely optional and needs not
+    # be done.
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2143
+    # if [ ! $(grep -e "#log-facility" /etc/dnsmasq.d/01-pihole.conf) ]; then
+      # sed -i 's/^log-facility/#&/' /etc/dnsmasq.d/01-pihole.conf
+    # fi
+
+    # ...additions, last....
+
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2143
     if [ ! $(grep -i -e "interface=br-lan" /etc/dnsmasq.d/01-pihole.conf) ]; then
       echo "interface=br-lan" >> /etc/dnsmasq.d/01-pihole.conf
+    fi
+
+    # NOTE(jeff): This is entirely optional and needs not
+    # be done.
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2143
+    if [ ! $(grep -e "no-hosts" /etc/dnsmasq.d/01-pihole.conf) ]; then
+      echo "no-hosts" >> /etc/dnsmasq.d/01-pihole.conf
     fi
   else
     if [ -n "$NOM_DEBUG" ]; then
@@ -125,10 +161,6 @@ adjust_config() {
 
 # Final function call; wrap things up before this is called!
 on_finish() {
-  if [[ -n "$NOM_DEBUG" ]]; then
-    echo "$(date -R)"
-  fi
-
   /etc/init.d/pihole reload
 }
 
@@ -136,7 +168,7 @@ on_finish() {
 
 SOURCE_SSH="$1"
 
-if [[ -z "$SOURCE_SSH" ]]; then
+if [ -z "$SOURCE_SSH" ]; then
   echo "CRITICAL: Missing function argument -- a SSH host we may obtain the "
   echo "primary configuration files from."
   echo
@@ -157,4 +189,3 @@ on_finish
 exit 0
 
 # End main execution...
-
