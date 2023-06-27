@@ -161,7 +161,9 @@ adjust_config() {
 
 # Final function call; wrap things up before this is called!
 on_finish() {
-  /etc/init.d/pihole restart
+  /etc/init.d/pihole stop
+  sleep 5
+  /etc/init.d/pihole start
 }
 
 # Begin main execution...
