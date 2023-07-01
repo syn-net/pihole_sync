@@ -3,3 +3,6 @@
 build/*
 !build/.placeholder
 
+.env
+!.env.dist
+

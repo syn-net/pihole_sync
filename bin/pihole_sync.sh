@@ -11,6 +11,7 @@
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
+SLEEP_BIN=$(command -v sleep)
 PING_BIN="$(command -v ping)"
 # Internal variables used in the sync function.
 SCP_BIN="$(command -v scp)"
@@ -68,10 +69,10 @@ setup() {
 # Synchronize the local authoritative nameserver to then host as a backup
 # nameserver for the host resolution of local hosts.
 #
-# sync(ssh_source_host)
+# sync_pull(ssh_source_host)
 # ...where ssh_source_host is a string containing the username and host of the
 # SSH target whose files we are copying from.
-sync() {
+sync_pull() {
   SCP_ARGS="-O" # openwrt compat
   SOURCE="$1"
   SOURCE_CONFIG_PATH="/mnt/npool0/software/Applications/pihole-1/config"
@@ -97,14 +98,22 @@ sync() {
   "$SCP_BIN" "$SCP_ARGS" "${SOURCE}:${SOURCE_DNSMASQ_PATH}/99-extra.conf" "${TARGET_DNSMASQ_PATH}/99-extra.conf"
 }
 
+# TODO(jeff): We can **almost** call sync_push with the right SSH hostname
+# from within this function and call it quits. Refactor the code to make 
+# this so!
+sync_push() {
+  echo "STUB: This function is not yet implemented."
+  exit 2
+}
+
 # The source configuration files must be modified before usage on another host.
 # This function strives to perform the most minimal changes necessary for working
 # functionality as a backup nameserver.
 #
-# adjust_config(boolean)
+# adjust_pull_config(boolean)
 # ...where boolean is an optional parameter whose non-nil value will abort performing
 # any adjustments, giving one the raw configuration as was seen on the source.
-adjust_config() {
+adjust_pull_config() {
   NOM_FIX_CONFIG="$1"
   if [ "$NOM_FIX_CONFIG" = "true" ] || [ "$NOM_FIX_CONFIG" = "1" ]; then
     #echo "addn-hosts=/etc/pihole/hosts\n" >> /etc/dnsmasq.d/01-pihole.conf
@@ -159,10 +168,23 @@ adjust_config() {
   fi
 }
 
+# TODO(jeff): Prepare the configuration in reverse of how we have done so
+# in adjust_pull_config
+adjust_push_config() {
+  echo "STUB: This function is not implemented yet."
+  exit 2
+}
+
 # Final function call; wrap things up before this is called!
-on_finish() {
+on_pull_finish() {
   /etc/init.d/pihole stop
-  sleep 5
+  "$SLEEP_BIN" 5
+  /etc/init.d/pihole start
+}
+
+on_push_finish() {
+  /etc/init.d/pihole stop
+  "$SLEEP_BIN" 5
   /etc/init.d/pihole start
 }
 
@@ -183,10 +205,14 @@ check_app_path "${PING_BIN}"
 setup
 
 echo "Opening a connection to... ${SOURCE_SSH}"
-sync "$SOURCE_SSH"
+sync_pull "$SOURCE_SSH"
 
-adjust_config "true"
-on_finish
+adjust_pull_config "true"
+on_pull_finish
+
+#adjust_push_config "true"
+#sync_push "$TARGET_SSH"
+#on_push_finish
 
 exit 0
 
