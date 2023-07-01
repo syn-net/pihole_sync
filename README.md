@@ -13,13 +13,28 @@ box I am using this script on -- I've tried! Oh well.
 
 OpenWrt 22.03.3 r20028-43d71ad93e
 
-## Installation
+### Dependencies
 
-From within the root directory of this project repository...
+- ash
+  * This is the default shell and is distributed with the base installation
+  - busybox
+    * `echo`
+    * `mkdir`
+    * `ping`
+    * `sed`
+    * `sleep`
+    * `touch`
+- curl
+- scp
+  * I believe that this package is distributed with the base installation on most all platforms
+
+### Installation
+
+It is assumed that you have setup SSH access to the system you are interested
+in bootstrapping this software with. From within that terminal, let us begin!
 
 ```shell
-# Install dependencies; we need scp from the package...
-opkg install openssh-client-utils
+opkg install curl busybox
 mkdir -p /root/bin
 cp -av bin/pihole_sync.sh /root/bin/pihole_sync.sh
 cp -av etc/init.d/pihole /etc/init.d/pihole
@@ -32,7 +47,7 @@ cp -av etc/crontabs/root /etc/crontabs/root
 /etc/init.d/cron start
 ```
 
-You must modify the **sync** function in `/root/bin/pihole_sync.sh` if you
+**FIXME**: You must modify the **sync** function in `/root/bin/pihole_sync.sh` if you
 expect this to work on your network; change the path of the source configuration
 files.
 
@@ -46,3 +61,7 @@ files.
 **NOTE:** I have not tested this script with non-superuser accounts. I do not
 expect it to work out of the box! It should be simple to add, though, as
 the `dnsmasq` daemon is ran under a *user* account, not `root`.
+
+## Alternatives
+
+- [gravity-sync](https://github.com/vmstan/gravity-sync)
