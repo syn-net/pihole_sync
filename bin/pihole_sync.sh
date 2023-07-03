@@ -103,6 +103,7 @@ sync_pull() {
 # TODO(jeff): We can **almost** call sync_push with the right SSH hostname
 # from within this function and call it quits. Refactor the code to make
 # this so!
+# shellcheck disable=SC2317
 sync_push() {
   echo "STUB: This function is not yet implemented."
   exit 2
@@ -172,6 +173,7 @@ adjust_pull_config() {
 
 # TODO(jeff): Prepare the configuration in reverse of how we have done so
 # in adjust_pull_config
+# shellcheck disable=SC2317
 adjust_push_config() {
   echo "STUB: This function is not implemented yet."
   exit 2
@@ -184,6 +186,7 @@ on_pull_finish() {
   /etc/init.d/pihole start
 }
 
+# shellcheck disable=SC2317
 on_push_finish() {
   /etc/init.d/pihole stop
   "$SLEEP_BIN" 5
