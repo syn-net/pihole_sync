@@ -140,6 +140,10 @@ adjust_pull_config() {
       sed -i 's/^log-queries/#&/' /etc/dnsmasq.d/01-pihole.conf
     fi
 
+    if [ ! $(grep -e "auth-server=ns1.lan,192.168.12.1,br-lan" /etc/dnsmasq.d/99-extra.conf) ]; then
+      sed -i 's/^auth-server=ns1.lan,192.168.12.1,br0/auth-server=ns1.lan,192.168.12.1,br-lan/' /etc/dnsmasq.d/99-extra.conf
+    fi
+
     # NOTE(jeff): This is entirely optional and needs not
     # be done.
     # shellcheck disable=SC2046
