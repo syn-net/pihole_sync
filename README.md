@@ -62,6 +62,14 @@ files.
 expect it to work out of the box! It should be simple to add, though, as
 the `dnsmasq` daemon is ran under a *user* account, not `root`.
 
+## extras
+
+- `extras/cronic_ash.sh` This is nifty little script that you simply append in
+front of whatever script you are running from your user's `crontab` entry in order
+to receive emails from `crond` *only* when the script exits with a **non-zero** signal
+code. It is not included in the sample `etc/crontab/root` and must be appended yourself.
+  * [cronic](https://habilis.net/cronic/)
+
 ## Alternatives
 
 - [gravity-sync](https://github.com/vmstan/gravity-sync)
