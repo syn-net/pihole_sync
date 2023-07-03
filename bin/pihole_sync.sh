@@ -75,7 +75,7 @@ setup() {
 sync_pull() {
   SCP_ARGS="-O" # openwrt compat
   SOURCE="$1"
-  SOURCE_CONFIG_PATH="/mnt/npool0/software/Applications/pihole-1/config"
+  SOURCE_CONFIG_PATH="/mnt/npool0/software/Applications/pihole-1/mounts/config"
   SOURCE_DNSMASQ_PATH="/mnt/npool0/software/Applications/pihole-1/mounts/dnsmasq"
   TARGET_CONFIG_PATH="/etc/pihole"
   TARGET_DNSMASQ_PATH="/etc/dnsmasq.d"
