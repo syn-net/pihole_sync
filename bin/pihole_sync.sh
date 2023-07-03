@@ -99,7 +99,7 @@ sync_pull() {
 }
 
 # TODO(jeff): We can **almost** call sync_push with the right SSH hostname
-# from within this function and call it quits. Refactor the code to make 
+# from within this function and call it quits. Refactor the code to make
 # this so!
 sync_push() {
   echo "STUB: This function is not yet implemented."
