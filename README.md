@@ -33,8 +33,15 @@ OpenWrt 22.03.3 r20028-43d71ad93e
 
 ### Installation
 
-It is assumed that you have setup SSH access to the system you are interested
-in bootstrapping this software with. From within that terminal, let us begin!
+It is assumed that you have setup SSH access to the system you are bootstrapping
+this software on. Also, it is recommended that you setup an unprivileged local
+user on the source location that has SSH access to the Pi-Hole configuration files.
+
+```shell
+# /root/.ssh/authorized_keys on the Pi-Hole source server
+command="/scripts/sshd/scp.sh",FROM="<PRIVATE_IP_HERE>",NO-AGENT-FORWARDING,NO-PORT-FORWARDING,NO-PTY,NO-USER-RC,NO-X11-FORWARDING ssh-ed25519 <YOUR_SSH_KEY_WITHOUT_PASSPHRASE>
+```
+- [scp.sh](https://gist.github.com/Zoddo/035784d640ecf9156fa471534deb1e1f)
 
 ```shell
 opkg install curl busybox
@@ -60,10 +67,6 @@ to match your setup!
 # SSH user and host of the pihole box to sync
 /root/bin/pihole_sync.sh user@domain.tld
 ```
-
-**NOTE:** I have not tested this script with non-superuser accounts. I do not
-expect it to work out of the box! It should be simple to add, though, as
-the `dnsmasq` daemon is ran under a *user* account, not `root`.
 
 ## extras
 
