@@ -3,11 +3,14 @@
 This is a simple workaround script I have come up with in order to maintain a
 secondary DNS server while using Pi-Hole as my primary DNS resolver --
 although, ad-blocking functionality is lost when the primary goes down, internal
-host resolving remains and therefore the critical functionality I need is
-preserved.
+host resolving remains functional and therefore acceptable to me.
 
 It was not feasible for me to maintain a block-list on the RAM-starved router
 box I am using this script on -- I've tried! Oh well.
+
+**NOTE**: What makes this project unique is the fact that the secondary DNS has
+nothing to do with Pi-Hole and is only a bare-bones `dnsmasq` setup. It is a
+redundant version of Pi-Hole's core functionality.
 
 ## Target
 
@@ -48,8 +51,8 @@ cp -av etc/crontabs/root /etc/crontabs/root
 ```
 
 **FIXME**: You must modify the **sync** function in `/root/bin/pihole_sync.sh` if you
-expect this to work on your network; change the path of the source configuration
-files.
+expect this to work on your network; change the path of the configuration files
+to match your setup!
 
 ## usage
 
@@ -67,7 +70,7 @@ the `dnsmasq` daemon is ran under a *user* account, not `root`.
 - `extras/cronic_ash.sh` This is nifty little script that you simply append in
 front of whatever script you are running from your user's `crontab` entry in order
 to receive emails from `crond` *only* when the script exits with a **non-zero** signal
-code. It is not included in the sample `etc/crontab/root` and must be appended yourself.
+code. ~It is not included in the sample `etc/crontab/root` and must be appended yourself.~
   * [cronic](https://habilis.net/cronic/)
 
 ## Alternatives
