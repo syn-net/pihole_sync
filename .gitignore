@@ -6,3 +6,7 @@ build/*
 .env
 !.env.dist
 
+ssh/*
+!ssh/id_ed25519-nopassphrase.pub
+!ssh/id_rsa-nopassphrase.pub
+
