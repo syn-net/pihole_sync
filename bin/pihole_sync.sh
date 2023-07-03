@@ -9,6 +9,8 @@
 # TODO(jeff): Consider using a dedicated user account for sync?
 #
 
+set -o errexit #-o xtrace #-o nounset
+
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
 SLEEP_BIN=$(command -v sleep)
