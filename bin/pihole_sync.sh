@@ -9,7 +9,9 @@
 # TODO(jeff): Consider using a dedicated user account for sync?
 #
 
-set -o errexit #-o xtrace #-o nounset
+#set -o errexit
+#set -o xtrace
+#set -o nounset
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
@@ -113,13 +115,27 @@ sync_push() {
 # This function strives to perform the most minimal changes necessary for working
 # functionality as a backup nameserver.
 #
-# adjust_pull_config(boolean)
+# adjust_pull_config(source_file, boolean)
 # ...where boolean is an optional parameter whose non-nil value will abort performing
 # any adjustments, giving one the raw configuration as was seen on the source.
 adjust_pull_config() {
-  NOM_FIX_CONFIG="$1"
+  CONFIG_SOURCE_FILE="$1"
+  if [ "$CONFIG_SOURCE_FILE" = "" ]; then
+    echo "CRITICAL: Missing function parameter in adjust_pull_config -- config source file."
+    echo
+    exit 255
+  fi
+
+  if [ ! (-f "$CONFIG_SOURCE_FILE") ]; then
+    echo "CRITICAL: Configuration source file not found at ${CONFIG_SOURCE_FILE}."
+    echo
+    exit 2
+  fi
+
+  NOM_FIX_CONFIG="$2"
   if [ "$NOM_FIX_CONFIG" = "true" ] || [ "$NOM_FIX_CONFIG" = "1" ]; then
-    #echo "addn-hosts=/etc/pihole/hosts\n" >> /etc/dnsmasq.d/01-pihole.conf
+    echo "Adjusting configuration entry at ${CONFIG_SOURCE_FILE}..."
+    #echo "addn-hosts=/etc/pihole/hosts\n" >> "${CONFIG_SOURCE_FILE}"
 
     # ...reductions first...
 
@@ -127,21 +143,8 @@ adjust_pull_config() {
     # understand the syntax Pihole employs.
     # shellcheck disable=SC2046
     # shellcheck disable=SC2143
-    if [ ! $(grep -e "#rev-server" /etc/dnsmasq.d/01-pihole.conf) ]; then
-      sed -i 's/^rev-server=/#&/' /etc/dnsmasq.d/01-pihole.conf
-    fi
-
-    # IMPORTANT(jeff): Disabling DNS query logging is done
-    # to prevent filling up the disk on this box -- we have
-    # no logrotate or such!
-    # shellcheck disable=SC2046
-    # shellcheck disable=SC2143
-    if [ ! $(grep -e "#log-queries" /etc/dnsmasq.d/01-pihole.conf) ]; then
-      sed -i 's/^log-queries/#&/' /etc/dnsmasq.d/01-pihole.conf
-    fi
-
-    if [ ! $(grep -e "auth-server=ns1.lan,192.168.12.1,br-lan" /etc/dnsmasq.d/99-extra.conf) ]; then
-      sed -i 's/^auth-server=ns1.lan,192.168.12.1,br0/auth-server=ns1.lan,192.168.12.1,br-lan/' /etc/dnsmasq.d/99-extra.conf
+    if [ ! $(grep -e "#rev-server" "${CONFIG_SOURCE_FILE}") ]; then
+      sed -i 's/^rev-server=/#&/' "${CONFIG_SOURCE_FILE}"
     fi
 
     # NOTE(jeff): This is entirely optional and needs not
@@ -156,16 +159,30 @@ adjust_pull_config() {
 
     # shellcheck disable=SC2046
     # shellcheck disable=SC2143
-    if [ ! $(grep -i -e "interface=br-lan" /etc/dnsmasq.d/01-pihole.conf) ]; then
-      echo "interface=br-lan" >> /etc/dnsmasq.d/01-pihole.conf
+    if [ ! $(grep -i -e "interface=br-lan" "${CONFIG_SOURCE_FILE}") ]; then
+      echo "interface=br-lan" >> "${CONFIG_SOURCE_FILE}"
     fi
 
     # NOTE(jeff): This is entirely optional and needs not
     # be done.
     # shellcheck disable=SC2046
     # shellcheck disable=SC2143
-    if [ ! $(grep -e "no-hosts" /etc/dnsmasq.d/01-pihole.conf) ]; then
-      echo "no-hosts" >> /etc/dnsmasq.d/01-pihole.conf
+    if [ ! $(grep -e "no-hosts" "${CONFIG_SOURCE_FILE}") ]; then
+      echo "no-hosts" >> "${CONFIG_SOURCE_FILE}"
+    fi
+
+    # IMPORTANT(jeff): Disabling DNS query logging is done
+    # to prevent filling up the disk on this box -- we have
+    # no logrotate or such!
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2143
+    if [ ! $(grep -e "#log-queries" "${CONFIG_SOURCE_FILE}") ]; then
+      sed -i 's/^log-queries/#&/' "${CONFIG_SOURCE_FILE}"
+    fi
+
+    # FIXME(jeff): Add secondary config file source
+    if [ ! $(grep -e "auth-server=ns1.lan,192.168.12.1,br-lan" /etc/dnsmasq.d/99-extra.conf) ]; then
+      sed -i 's/^auth-server=ns1.lan,192.168.12.1,br0/auth-server=ns1.lan,192.168.12.1,br-lan/' /etc/dnsmasq.d/99-extra.conf
     fi
   else
     if [ -n "$NOM_DEBUG" ]; then
@@ -216,7 +233,9 @@ setup
 echo "Opening a connection to... ${SOURCE_SSH}"
 sync_pull "$SOURCE_SSH"
 
-adjust_pull_config "true"
+adjust_pull_config /etc/dnsmasq.d/01-pihole.conf "true"
+# TODO(jeff):
+# adjust_pull_config ("/etc/dnsmasq.d/01-pihole.conf" "/etc/dnsmasq.d/99-extra.conf") "true"
 on_pull_finish
 
 #adjust_push_config "true"
