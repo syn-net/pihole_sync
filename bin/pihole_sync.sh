@@ -126,7 +126,7 @@ adjust_pull_config() {
     exit 255
   fi
 
-  if [ ! (-f "$CONFIG_SOURCE_FILE") ]; then
+  if [ ! -f "$CONFIG_SOURCE_FILE" ]; then
     echo "CRITICAL: Configuration source file not found at ${CONFIG_SOURCE_FILE}."
     echo
     exit 2
@@ -180,9 +180,9 @@ adjust_pull_config() {
       sed -i 's/^log-queries/#&/' "${CONFIG_SOURCE_FILE}"
     fi
 
-    # FIXME(jeff): Add secondary config file source
-    if [ ! $(grep -e "auth-server=ns1.lan,192.168.12.1,br-lan" /etc/dnsmasq.d/99-extra.conf) ]; then
-      sed -i 's/^auth-server=ns1.lan,192.168.12.1,br0/auth-server=ns1.lan,192.168.12.1,br-lan/' /etc/dnsmasq.d/99-extra.conf
+    # FIXME(jeff): Add secondary config file source as an array we pass
+    if [ ! $(grep -e "auth-server=ns1.lan,192.168.12.1,br-lan" "/etc/dnsmasq.d/99-extra.conf") ]; then
+      sed -i 's/^auth-server=ns1.lan,192.168.12.1,br0/auth-server=ns1.lan,192.168.12.1,br-lan/' "/etc/dnsmasq.d/99-extra.conf"
     fi
   else
     if [ -n "$NOM_DEBUG" ]; then
