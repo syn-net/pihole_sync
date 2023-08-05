@@ -1,6 +1,4 @@
 #!/bin/ash
 
-/root/bin/pihole_sync.sh pihole@fs1.lan
-
-exit 0
+/root/bin/pihole_sync.sh pihole@fs1.lan >> /var/log/pihole_sync.log 2>&1
 
