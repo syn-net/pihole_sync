@@ -22,23 +22,27 @@
 PATH=/root/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 SHELL=/bin/ash
 MAILFROM=root
-MAILTO=1329364+i8degrees@users.noreply.github.com
+MAILTO=i8degrees+ns2@gmail.com
 CRON_TZ=America/Chicago
 
-*/5 * * * * cronic cd / && run-parts --report /etc/periodic/5min
-*/10 * * * * cronic cd / && run-parts --report /etc/periodic/10min
-*/15 * * * * cronic cd / && run-parts --report /etc/periodic/15min
-*/30 * * * * cronic cd / && run-parts --report /etc/periodic/30min
-*/45 * * * * cronic cd / && run-parts --report /etc/periodic/45min
+# FIXME(jeff): Eek! run-parts broke my cron jobs. I will put either porting
+# or re-writing a replacement for run-parts in the coming weeks...
+
+*/5 * * * * cd / && /etc/periodic/5min/pihole_sync.sh
+*/10 * * * * cd / && /etc/periodic/10min
+*/15 * * * * cd / && /etc/periodic/15min
+*/30 * * * * cd / && /etc/periodic/30min
+*/45 * * * * cd / && /etc/periodic/45min
 
 # /etc/cron.hourly is a symlink
-0 * * * * cronic cd / && run-parts --report /etc/periodic/hourly
-# /etc/cron.daily is a symlink
-0 2 * * * cronic cd / && run-parts --report /etc/periodic/daily
-# /etc/cron.weekly is a symlink
-0 3 * * 6 cronic cd / && run-parts --report /etc/periodic/weekly
-# /etc/cron.monthly is a symlink
-0 5 1 * * cronic cd / && run-parts --report /etc/periodic/monthly
+0 * * * * cd / && /etc/periodic/hourly
 
-#*/1 * * * * cronic cd / && run-parts --report /etc/periodic/1min >> /tmp/crond.log
-#*/5 * * * * cronic /root/bin/pihole_sync.sh pihole@ns1.lan >> /var/log/pihole_sync.log 2>&1
+# /etc/cron.daily is a symlink
+0 2 * * * cd / && /etc/periodic/daily
+
+# /etc/cron.weekly is a symlink
+0 3 * * 6 cd / && /etc/periodic/weekly
+
+# /etc/cron.monthly is a symlink
+0 5 1 * * cd / && /etc/periodic/monthly
+
