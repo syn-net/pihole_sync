@@ -27,9 +27,15 @@ OpenWrt 22.03.3 r20028-43d71ad93e
     * `sed`
     * `sleep`
     * `touch`
+    * `crond` **without** sendmail notifications unless specifically built for your platform
 - curl
 - scp
   * I believe that this package is distributed with the base installation on most all platforms
+- [cronic](https://habilis.net/cronic/)
+  * This awesome script was written with BASH in mind, not ASH. The only modification
+I had to make was to change the first line -- shebang -- from `#!/usr/bin/env bash` to `#!/usr/bin/env ash`.
+- [run-parts](https://github.com/ikysil/run-parts)
+  * Sadly, this script is not available as an applet nor is it packaged for OpenWRT. You may find the original script I used at [github: run-parts](https://github.com/ikysil/run-parts/) or the **WIP** variant that I have hosted at [github: syn-net/scripts](https://github.com/syn-net/ns2.lan_scripts.git/). It works well enough for me to be used in my root's `crontab`. Your millage may differ.
 
 ### Installation
 
