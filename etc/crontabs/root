@@ -1,11 +1,44 @@
+# /etc/crontabs/root:jeff
+#
 # 1. https://openwrt.org/docs/guide-user/base-system/cron
 # 2. https://crontab.guru
+#
+# FIXME(jeff): I do not believe that this crond daemon has
+# support compiled in for sending emails -- cronic does
+# indeed work proper, but it is the job of the crond daemon
+# to do the actual legwork here. Further research is 
+# warranted [1]...
+#
+# 1. https://openwrt.org/docs/guide-user/services/email/smtp.client#installation3
+#
+# CONFIRMED(jeff): We must build a Busybox package that has
+# sendmail enabled in order for the Busybox implementation
+# of cron to send mail for us. While we are at it, if we 
+# wind up doing so, we ought to also compile in the 
+# run-parts applet. The BASH version we are using is not 
+# 100% compatible with ash.
+#
 
 PATH=/root/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 SHELL=/bin/ash
 MAILFROM=root
-MAILTO=i8degrees@gmail.com
+MAILTO=1329364+i8degrees@users.noreply.github.com
 CRON_TZ=America/Chicago
 
-# Sync every 5 minutes
-*/5 * * * * /usr/local/sbin/cronic.sh /root/bin/pihole_sync.sh pihole@ns1.lan >> /var/log/pihole_sync.log 2>&1
+*/5 * * * * cronic cd / && run-parts --report /etc/periodic/5min
+*/10 * * * * cronic cd / && run-parts --report /etc/periodic/10min
+*/15 * * * * cronic cd / && run-parts --report /etc/periodic/15min
+*/30 * * * * cronic cd / && run-parts --report /etc/periodic/30min
+*/45 * * * * cronic cd / && run-parts --report /etc/periodic/45min
+
+# /etc/cron.hourly is a symlink
+0 * * * * cronic cd / && run-parts --report /etc/periodic/hourly
+# /etc/cron.daily is a symlink
+0 2 * * * cronic cd / && run-parts --report /etc/periodic/daily
+# /etc/cron.weekly is a symlink
+0 3 * * 6 cronic cd / && run-parts --report /etc/periodic/weekly
+# /etc/cron.monthly is a symlink
+0 5 1 * * cronic cd / && run-parts --report /etc/periodic/monthly
+
+#*/1 * * * * cronic cd / && run-parts --report /etc/periodic/1min >> /tmp/crond.log
+#*/5 * * * * cronic /root/bin/pihole_sync.sh pihole@ns1.lan >> /var/log/pihole_sync.log 2>&1
