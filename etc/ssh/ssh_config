@@ -1,0 +1,9 @@
+# ssh pihole@fs1.lan
+Host fs1
+  Hostname fs1.lan
+  User pihole
+  Port 22
+  IdentityFile /root/.ssh/id_rsa
+  BatchMode no
+  Compression no
+
