@@ -8,7 +8,10 @@
 #
 # TODO(jeff): Consider using a dedicated user account for sync?
 #
+# opkg install curl openssh-client-utils busybox grep
+#
 
+set -o pipefail
 #set -o errexit
 #set -o xtrace
 #set -o nounset
@@ -16,18 +19,27 @@
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
 SLEEP_BIN=$(command -v sleep)
-PING_BIN="$(command -v ping)"
 # Internal variables used in the sync function.
 SCP_BIN="$(command -v scp)"
 
-# Sanity check of the existence of a given path (executable).
-check_app_path() {
-  APP="$1"
-  if [ ! -x "$APP" ]; then
-    echo "CRITICAL: Could not find ${APP} or it is non-executable."
-    echo
-    exit 2
-  fi
+# echo pihole@fs1.home | grep -i -P '(?<=@)[^.]+(?=\.).*' ; echo $?
+# 1. https://stackoverflow.com/questions/39027204/regex-get-domain-name-from-email
+#first.name@google.com
+#pihole@fs1.home
+#pihole@fs1
+#pihole
+#fs1.home
+#careers.walmart.com
+#publix.jobs
+regexp_domain() {
+  str=$1
+  result=0
+  exp='(?<=@)[^.]+(?=\.).*'
+
+  echo $str | grep -P $exp
+  result=$?
+
+  return $result
 }
 
 # Sanity check of the existence of a host.
@@ -35,14 +47,16 @@ check_app_path() {
 # check_ip4_host(addr)
 # ...where addr is an IPv4 address or a hostname that is
 # resolvable by DNS.
-#check_ip4_host() {
-  #ADDR="$1"
-  #if [ ! $("$PING_BIN" -4 -w5 "$ADDR") ]; then
-    #echo "CRITICAL: Could not reach the host at ${ADDR}."
-    #echo
-    #exit 254
-  #fi
-#}
+check_ip4_host() {
+  ADDR="$1"
+  result=0 # success
+
+  if [ regexp_domain "$ADDR" ] && [ ! ping -4 -w2 "$ADDR" ]; then
+    result=1
+  fi
+
+  return $result
+}
 
 # Perform allocation duties of target directory paths and
 # logging files.
@@ -99,7 +113,7 @@ sync_pull() {
   "$SCP_BIN" "$SCP_ARGS" "${SOURCE}:${SOURCE_DNSMASQ_PATH}/01-pihole.conf" "${TARGET_DNSMASQ_PATH}/01-pihole.conf"
   "$SCP_BIN" "$SCP_ARGS" "${SOURCE}:${SOURCE_DNSMASQ_PATH}/05-pihole-custom-cname.conf" "${TARGET_DNSMASQ_PATH}/05-pihole-custom-cname.conf"
   "$SCP_BIN" "$SCP_ARGS" "${SOURCE}:${SOURCE_DNSMASQ_PATH}/06-rfc6761.conf" "${TARGET_DNSMASQ_PATH}/06-rfc6761.conf"
-  "$SCP_BIN" "$SCP_ARGS" "${SOURCE}:${SOURCE_DNSMASQ_PATH}/99-extra.conf" "${TARGET_DNSMASQ_PATH}/99-extra.conf"
+  #"$SCP_BIN" "$SCP_ARGS" "${SOURCE}:${SOURCE_DNSMASQ_PATH}/99-extra.conf" "${TARGET_DNSMASQ_PATH}/99-extra.conf"
 }
 
 # TODO(jeff): We can **almost** call sync_push with the right SSH hostname
@@ -225,9 +239,12 @@ if [ -z "$SOURCE_SSH" ]; then
   exit 2
 fi
 
-check_app_path "${SCP_BIN}"
-check_app_path "${PING_BIN}"
-#check_ip4_host "${SOURCE_SSH_HOST}"
+if ! check_ip4_host "${SOURCE_SSH}"; then
+  echo "CRITICAL: Could not establish link to remote endpoint..."
+  echo
+  exit 3
+fi
+
 setup
 
 echo "Opening a connection to... ${SOURCE_SSH}"
