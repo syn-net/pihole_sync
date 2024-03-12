@@ -40,7 +40,7 @@ function service_running() {
 # reload configuration of dnsmasq daemon
 function service_reload() {
   echo "Reloading configuration for dnsmasq..."
-  DNSMASQ_PID=$(pgrep dnsmasq)
+  DNSMASQ_PID="$(cat /var/run/pihole.pid)"
   if [[ "$DNSMASQ_PID" != "" ]]; then
     kill -s HUP "$DNSMASQ_PID"
   fi
@@ -54,8 +54,10 @@ function _setup() {
 
 function service_stop() {
   echo "Stopping dnsmasq..."
-  DNSMASQ_PID=$(pgrep dnsmasq)
-  if [[ "$DNSMASQ_PID" != "" ]]; then
+  #DNSMASQ_PID=$(pgrep dnsmasq)
+  DNSMASQ_PID="$(cat /var/run/pihole.pid)"
+  if [ "$DNSMASQ_PID" != "" ]; then
+echo killing
     kill -s 15 "$DNSMASQ_PID"
   fi
 }
