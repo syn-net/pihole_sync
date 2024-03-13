@@ -18,9 +18,9 @@ set -o pipefail
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
-SLEEP_BIN=$(command -v sleep)
+SLEEP_BIN=$(which sleep)
 # Internal variables used in the sync function.
-SCP_BIN="$(command -v scp)"
+SCP_BIN="$(which scp)"
 
 # echo pihole@fs1.home | grep -i -P '(?<=@)[^.]+(?=\.).*' ; echo $?
 # 1. https://stackoverflow.com/questions/39027204/regex-get-domain-name-from-email
